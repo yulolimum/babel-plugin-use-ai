@@ -35,3 +35,13 @@ function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
 	// instructions=This function is inside a React component with state setters: setIsLoading, setError, and setSuccess. Prevent default form submission, call setIsLoading(true), simulate an async API call with setTimeout (2 seconds), then call setIsLoading(false) and setSuccess(true). Handle errors by calling setError with the error message.
 	throw new Error("Not implemented");
 }
+
+function ParentComponent() {
+	function nestedFunction(): string {
+		"use ai";
+		// instructions=Return the string "Hello from nested function!"
+		throw new Error("Not implemented");
+	}
+
+	return nestedFunction();
+}
