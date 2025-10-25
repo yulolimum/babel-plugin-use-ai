@@ -30,7 +30,6 @@ export class FunctionCache {
         return JSON.parse(data)
       }
     } catch (error) {
-      console.warn('Failed to load cache, starting fresh:', error instanceof Error ? error.message : String(error))
     }
     return {}
   }
@@ -39,7 +38,6 @@ export class FunctionCache {
     try {
       fs.writeFileSync(this.cachePath, JSON.stringify(this.cache, null, 2), 'utf-8')
     } catch (error) {
-      console.error('Failed to save cache:', error instanceof Error ? error.message : String(error))
     }
   }
 
@@ -53,7 +51,6 @@ export class FunctionCache {
     const entry = this.cache[key]
     
     if (entry) {
-      console.log(`✓ Cache hit for function`)
       return entry.generatedCode
     }
     

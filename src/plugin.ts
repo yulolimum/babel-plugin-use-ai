@@ -31,10 +31,7 @@ export default function babelPluginUseAi(
     temperature: options.temperature ?? 0.7,
   }
 
-  // Initialize cache
   const cache = new FunctionCache()
-
-  // Store pending async operations
   const pendingOperations: Promise<void>[] = []
 
   return {
@@ -48,7 +45,6 @@ export default function babelPluginUseAi(
           return
         }
 
-        // Check for 'use ai' in directives array (Babel treats string literals at start of function as directives)
         let foundDirective = false
         if (body.directives) {
           for (const directive of body.directives) {
@@ -72,7 +68,6 @@ export default function babelPluginUseAi(
       },
     },
     post() {
-      // Wait for all async operations to complete before finishing
       return Promise.all(pendingOperations)
     },
   }
@@ -84,8 +79,6 @@ function isUseAiDirective(statement: t.Statement): boolean {
   }
 
   const expr = statement.expression
-  
-  // Handle both StringLiteral and TSAsExpression wrapping a StringLiteral
   let stringLiteral: t.StringLiteral | null = null
   
   if (t.isStringLiteral(expr)) {
@@ -106,7 +99,6 @@ function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
     return {}
   }
 
-  // Find the 'use ai' directive
   let useAiDirective: any = null
   for (const directive of body.directives) {
     if ((directive as any).value.value === 'use ai') {
@@ -119,7 +111,6 @@ function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
     return {}
   }
 
-  // Look for trailing comment on the directive
   const trailingComments = useAiDirective.trailingComments
   if (!trailingComments || trailingComments.length === 0) {
     return {}
@@ -127,8 +118,6 @@ function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
 
   const comment = trailingComments[0]
   const commentText = comment.value.trim()
-
-  // Parse key=value pairs (no @ai prefix needed)
   const metadata: Metadata = {}
   const pairs = commentText.split(',').map((s: string) => s.trim())
 
@@ -155,13 +144,9 @@ async function handleUseAiFunction(
 ): Promise<void> {
   const node = path.node
   const metadata = extractMetadataFromDirective(node.body)
-
-  // Get the actual function signature
   const signature = extractFunctionSignature(node)
   const params = signature.params.map(p => `${p.name}: ${p.type}`).join(', ')
   const functionCode = `function ${signature.name}(${params}): ${signature.returnType}`
-
-  // Merge plugin options with inline metadata (inline takes precedence)
   const mergedMetadata: Metadata = {
     ...metadata,
     model: metadata.model || pluginOptions.model,
@@ -169,8 +154,6 @@ async function handleUseAiFunction(
   }
 
   const prompt = buildPrompt(functionCode, mergedMetadata)
-
-  console.log(`🤖 Generating: ${node.id?.name}`)
 
   try {
     let generatedBody = await generateFunctionBody(
@@ -181,17 +164,12 @@ async function handleUseAiFunction(
       functionCode
     )
     
-    // Clean up markdown code fences if present
     generatedBody = generatedBody.replace(/```(?:typescript|javascript|ts|js)?\n?/g, '').replace(/```\n?/g, '')
 
     const bodyAst = parseBodyToAst(generatedBody)
     node.body.body = bodyAst
-    node.body.directives = [] // Remove directives
+    node.body.directives = []
   } catch (error) {
-    console.error(
-      `❌ Failed to generate ${node.id?.name}:`,
-      error instanceof Error ? error.message : String(error)
-    )
     throw error
   }
 }
@@ -268,10 +246,6 @@ function parseBodyToAst(bodyString: string): t.Statement[] {
 
     return blockStatement.body
   } catch (error) {
-    console.error(
-      'Failed to parse generated body:',
-      error instanceof Error ? error.message : String(error)
-    )
     throw error
   }
 }

@@ -10,7 +10,6 @@ export async function generateFunctionBody(
   cache?: FunctionCache,
   functionSignature?: string
 ): Promise<string> {
-  // Check cache first if available
   if (cache && functionSignature) {
     const cached = cache.get(functionSignature, metadata)
     if (cached) {
@@ -43,14 +42,12 @@ export async function generateFunctionBody(
 
     const generatedCode = text.trim()
     
-    // Cache the result if cache is available
     if (cache && functionSignature) {
       cache.set(functionSignature, metadata, generatedCode)
     }
 
     return generatedCode
   } catch (error) {
-    console.error('Failed to generate function body:', error instanceof Error ? error.message : String(error))
     throw error
   }
 }
