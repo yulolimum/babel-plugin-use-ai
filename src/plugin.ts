@@ -95,40 +95,34 @@ function isUseAiDirective(statement: t.Statement): boolean {
 }
 
 function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
-  if (!body || !body.directives || body.directives.length === 0) {
+  if (!body || !body.body || body.body.length === 0) {
     return {}
   }
 
-  let useAiDirective: any = null
-  for (const directive of body.directives) {
-    if ((directive as any).value.value === 'use ai') {
-      useAiDirective = directive
-      break
-    }
-  }
-
-  if (!useAiDirective) {
+  const firstStatement = body.body[0]
+  if (!firstStatement || !firstStatement.leadingComments) {
     return {}
   }
 
-  const trailingComments = useAiDirective.trailingComments
-  if (!trailingComments || trailingComments.length === 0) {
-    return {}
-  }
-
-  const comment = trailingComments[0]
-  const commentText = comment.value.trim()
   const metadata: Metadata = {}
-  const pairs = commentText.split(',').map((s: string) => s.trim())
+  
+  for (const comment of firstStatement.leadingComments) {
+    const commentText = comment.value.trim()
+    const match = commentText.match(/^\s*(\w+)\s*=\s*(.+)$/)
+    
+    if (!match) {
+      continue
+    }
 
-  for (const pair of pairs) {
-    const [key, value] = pair.split('=').map((s: string) => s.trim())
+    const [, key, rawValue] = match
+    const value = rawValue.trim().replace(/^["']|["']$/g, '')
+
     if (key === 'temperature' || key === 'seed') {
       metadata[key as keyof Metadata] = isNaN(Number(value))
         ? (value as any)
         : parseFloat(value)
     } else if (key === 'instructions') {
-      metadata.instructions = value.replace(/^["']|["']$/g, '')
+      metadata.instructions = value
     } else if (key === 'model') {
       metadata.model = value
     }
