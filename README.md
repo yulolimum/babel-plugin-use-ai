@@ -2,7 +2,7 @@
 
 > ⚠️ **WARNING**: This is a terrible idea and you absolutely should not use this in production. Or anywhere, really. Also this was vibe-coded so nothing probably works anyways..
 
-A Babel plugin that lets AI write your functions for you. Because why write code yourself when you can let a language model hallucinate implementations based on function names?
+A Babel plugin that lets AI write your functions for you. Because why write code yourself when you can let a language model hallucinate implementations based on function declarations marked as "use ai"?
 
 ## Why This Exists
 
@@ -29,7 +29,7 @@ npm install --save-dev @babel/core
 ## Setup
 
 1. Get an [OpenRouter](https://openrouter.ai/) API key
-2. Create a `.env` file:
+2. Create a `.env` file, or add to your existing one:
 
 ```env
 OPENROUTER_API_KEY=your-key-here
