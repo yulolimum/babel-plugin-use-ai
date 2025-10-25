@@ -65,12 +65,24 @@ Run Babel. The AI will generate the implementation. It might even be correct.
 
 ### Per-Function Options
 
+Override defaults with inline comments:
+
 ```typescript
 function shuffleArray<T>(arr: T[]): T[] {
-  'use ai' // temperature=0.5, model=anthropic/claude-sonnet-4
+  'use ai'
+  // temperature=0.5
+  // model=anthropic/claude-sonnet-4
+  // seed=42
+  // instructions=Use the Fisher-Yates shuffle algorithm
   throw new Error('Not implemented')
 }
 ```
+
+Available options:
+- `temperature` - Controls randomness (0.0 to 1.0)
+- `model` - Override the default AI model
+- `seed` - For reproducible outputs
+- `instructions` - Additional context for the AI
 
 ## How It Works
 
