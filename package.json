@@ -20,12 +20,11 @@
 	],
 	"scripts": {
 		"build": "tsup",
-		"dev": "tsx examples/dev.ts",
+		"dev": "tsup --watch",
 		"type-check": "tsc --noEmit",
 		"format": "biome format --write .",
 		"lint": "biome check .",
-		"lint:fix": "biome check --write .",
-		"prepublishOnly": "npm run build"
+		"lint:fix": "biome check --write ."
 	},
 	"dependencies": {},
 	"peerDependencies": {
@@ -43,7 +42,6 @@
 		"@types/node": "^24.9.1",
 		"dotenv": "^17.2.3",
 		"tsup": "^8.5.0",
-		"tsx": "^4.20.6",
 		"typescript": "^5.9.3"
 	}
 }
