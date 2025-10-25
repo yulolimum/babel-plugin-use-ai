@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# AI Cache
+.ai-cache.json
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Package build output
+/dist
+
+# Examples output
+example/dist
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.turbo/
