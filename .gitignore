@@ -7,15 +7,9 @@ node_modules/
 .env.local
 .env.*.local
 
-# AI Cache
-.ai-cache.json
-
 # Build output
 build/
 *.tsbuildinfo
-
-# Examples output
-examples/dist
 
 # IDE
 .vscode/
