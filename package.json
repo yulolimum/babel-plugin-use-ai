@@ -27,10 +27,7 @@
 		"lint:fix": "biome check --write .",
 		"prepublishOnly": "npm run build"
 	},
-	"dependencies": {
-		"@openrouter/ai-sdk-provider": "^1.2.0",
-		"ai": "^5.0.0"
-	},
+	"dependencies": {},
 	"peerDependencies": {
 		"@babel/core": "^7.23.0"
 	},
