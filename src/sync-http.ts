@@ -6,10 +6,7 @@ export interface SyncHttpOptions {
 	body?: string;
 }
 
-export function syncHttpRequest(
-	url: string,
-	options: SyncHttpOptions,
-): string {
+export function syncHttpRequest(url: string, options: SyncHttpOptions): string {
 	const { method, headers, body } = options;
 
 	// Build curl command
