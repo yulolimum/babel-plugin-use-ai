@@ -6,6 +6,47 @@ The plugin is **feature-complete and production-ready** (for a troll project). A
 
 ## Recent Changes
 
+### Metadata Format Expansion (Oct 24, 2025)
+**Problem:** Inline metadata format (`'use ai' // temperature=0.5, model=...`) was cramped and hard to read with multiple options.
+
+**Solution:** Changed to separate comment lines for each metadata option.
+
+**Impact:**
+- Cleaner, more readable metadata
+- Easier to add/remove individual options
+- Better support for long instructions
+- Each option on its own line
+
+**Before:**
+```typescript
+'use ai' // temperature=0.5, model=openai/gpt-4-turbo, seed=42
+```
+
+**After:**
+```typescript
+'use ai'
+// temperature=0.5
+// model=openai/gpt-4-turbo
+// seed=42
+// instructions=Custom instructions here
+```
+
+**Implementation:**
+- Modified `extractMetadataFromDirective()` to read `leadingComments` from first statement after directive
+- Per-line parsing with regex: `/^\s*(\w+)\s*=\s*(.+)$/`
+- Supports: `temperature`, `model`, `seed`, `instructions`
+
+**React Example:**
+Demonstrated using instructions to reference scope variables (state setters) without passing them as arguments:
+```typescript
+function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {
+  'use ai'
+  // temperature=0.3
+  // instructions=This function is inside a React component with state setters: setIsLoading, setError, and setSuccess...
+  throw new Error('Not implemented')
+}
+```
+
 ### Major Refactor: Source Code Extraction (Oct 24, 2025)
 **Problem:** Type extraction from AST was complex and buggy, resulting in cache entries with `any` types instead of actual TypeScript types.
 

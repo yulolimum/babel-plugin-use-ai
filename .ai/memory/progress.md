@@ -2,6 +2,13 @@
 
 ## Completed Features
 
+### ✅ Metadata System (Oct 24, 2025)
+- [x] Separate comment line format
+- [x] Per-line metadata parsing
+- [x] Support for temperature, model, seed, instructions
+- [x] Instructions can reference scope variables
+- [x] React component example with state setters
+
 ### ✅ Core Functionality
 - [x] Babel plugin infrastructure
 - [x] `'use ai'` directive detection
@@ -73,6 +80,12 @@
 - Removed all logging and debugging
 - Cleaned up comments
 - Polished code quality
+
+### 🎯 Metadata Format Expansion (Oct 24, 2025)
+- Changed from inline comma-separated to separate comment lines
+- Improved readability and maintainability
+- Added React component example
+- Demonstrated scope variable references in instructions
 
 ### 🎯 Documentation & Polish (Oct 24, 2025)
 - Created comprehensive README

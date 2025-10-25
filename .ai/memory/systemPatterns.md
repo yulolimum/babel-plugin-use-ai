@@ -96,11 +96,18 @@ private generateKey(signature: string, metadata: Metadata): string {
 
 ### Metadata Parsing
 ```typescript
-'use ai' // temperature=0.5, model=anthropic/claude-sonnet-4
+'use ai'
+// temperature=0.5
+// model=anthropic/claude-sonnet-4
+// seed=42
+// instructions=Custom instructions here
 ```
-- Comma-separated key=value pairs
+- Each metadata option on separate comment line
+- Parsed from `leadingComments` of first statement after directive
+- Regex pattern: `/^\s*(\w+)\s*=\s*(.+)$/`
 - Inline metadata overrides plugin defaults
 - Supports: temperature, model, seed, instructions
+- Instructions can reference scope variables (e.g., React state setters)
 
 ### AST Manipulation
 1. Parse generated code string to AST
