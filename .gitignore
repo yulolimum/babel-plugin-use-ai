@@ -11,12 +11,8 @@ node_modules/
 .ai-cache.json
 
 # Build output
-dist/
 build/
 *.tsbuildinfo
-
-# Package build output
-/dist
 
 # Examples output
 example/dist
