@@ -14,8 +14,8 @@
 ### Dev Dependencies
 - **TypeScript** (^5.9.3)
 - **tsup** (^8.5.0) - Build tool
-- **tsx** (^4.20.6) - TypeScript execution
-- **dotenv** (^17.2.3) - Environment variables
+- **dotenv** (^17.2.3) - Environment variables (used by examples)
+- **@biomejs/biome** (^2.3.0) - Linting and formatting
 
 ## Development Setup
 
@@ -39,9 +39,10 @@ OPENROUTER_API_KEY=your-key-here
 ```
 
 ### Available Scripts
-- `pnpm build` - Build plugin (ESM + CJS)
-- `pnpm dev` - Run example with hot reload
-- `pnpm type-check` - TypeScript validation
+- `npm build` - Build plugin (ESM + CJS)
+- `npm run dev` - Watch mode for live plugin rebuilds (tsup --watch)
+- `npm run dev:example` - Run example with tsx for quick function testing
+- `npm run type-check` - TypeScript validation
 
 ## Build Configuration
 
@@ -157,17 +158,23 @@ babel-plugin-use-ai/
 
 ## Development Workflow
 
-### Local Development
-1. Make changes to `src/`
-2. Run `pnpm build` to compile
-3. Run `pnpm dev` to test with examples
-4. Check `.ai-cache.json` for cache behavior
+### Quick Function Testing
+1. Modify `examples/example.ts`
+2. Run `npm run dev:example`
+3. Check `examples/dist/example.ts` for output
+4. Delete `.ai-cache.json` to force regeneration if needed
 
-### Testing Changes
-- Modify `example/example.ts`
-- Delete `.ai-cache.json` to force regeneration
-- Run `pnpm dev` to see results
-- Check `example/dist/example.ts` for output
+### React Native Integration Testing
+1. Make changes to `src/`
+2. Run `npm run dev` (tsup watch mode)
+3. In separate terminal: `cd examples/react-native && npm start`
+4. Edit plugin source → auto-rebuild → React Native picks up changes
+5. Debug with breakpoints in `dist/` files (sourcemaps enabled)
+
+### Production Build
+1. Run `npm run build`
+2. Check `dist/` for output files
+3. Verify type declarations in `dist/plugin.d.ts`
 
 ## Constraints & Limitations
 

@@ -97,10 +97,59 @@ const functionSignature = signatureMatch ? signatureMatch[0].trim() : sourceCode
 
 ## Current Focus
 
-**Documentation and Polish**
-- README is tongue-in-cheek and warns against production use
-- Memory bank created for future development
-- GitHub installation instructions (not publishing to npm)
+**Project Cleanup & Reorganization (Oct 25, 2025)**
+- Cleaned up root directory structure
+- Reorganized examples into dedicated subdirectory
+- Simplified development workflow
+- Updated biome.json for new structure
+
+### Dev Workflow & Project Reorganization (Oct 25, 2025)
+**Problem:** 
+- tsx-based dev workflow didn't support live debugging in integrated demo projects
+- Root directory cluttered with example-specific config files
+- Unclear separation between plugin code and examples
+
+**Solution:** 
+- Implemented tsup watch mode with onSuccess callback
+- Reorganized examples into `examples/file/` subdirectory
+- Moved example-specific configs to examples directory
+
+**Changes:**
+1. **New Directory Structure:**
+   ```
+   examples/file/
+   ├── babel.config.js    (example-specific Babel config)
+   ├── dev.js             (test runner script)
+   ├── example.ts         (test functions)
+   └── .env.example       (API key template)
+   ```
+
+2. **Removed from Root:**
+   - `babel.config.js` (moved to examples/file/)
+   - `.env.example` (moved to examples/file/)
+   - Old example files
+
+3. **Updated Configs:**
+   - `tsup.config.ts`: Added `onSuccess: "node examples/file/dev.js"`
+   - `tsconfig.json`: Exclude entire `examples/` directory
+   - `package.json`: Single `dev` script using tsup watch
+   - `biome.json`: Updated to lint only `src/`, `examples/file/`, and root configs
+
+**Workflow:**
+```bash
+npm run dev
+```
+- tsup watches `src/` and rebuilds on changes
+- After each build, automatically runs `examples/file/dev.js`
+- Test output shows transformed code
+- For React Native: RN uses `file:../..` dependency and picks up dist/ changes
+
+**Benefits:**
+- Cleaner root directory (only plugin code and configs)
+- Clear separation of concerns
+- Single command for development
+- Live debugging in both simple examples and React Native
+- Automatic test execution after rebuild
 
 ## Next Steps
 
