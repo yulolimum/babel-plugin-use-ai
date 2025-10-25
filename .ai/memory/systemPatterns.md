@@ -1,0 +1,163 @@
+# System Patterns
+
+## Architecture Overview
+
+```
+User Code (with 'use ai')
+    ↓
+Babel Parser
+    ↓
+Plugin Visitor (FunctionDeclaration)
+    ↓
+Directive Detection
+    ↓
+Cache Check → [Cache Hit] → Use Cached Code
+    ↓ [Cache Miss]
+OpenRouter API
+    ↓
+Code Generation
+    ↓
+Cache Storage
+    ↓
+AST Replacement
+    ↓
+Generated Code
+```
+
+## Core Components
+
+### 1. Plugin Entry (`src/plugin.ts`)
+- Babel plugin factory
+- Visitor pattern for AST traversal
+- Async operation management
+- Configuration handling
+
+### 2. Cache System (`src/cache.ts`)
+- File-based caching (`.ai-cache.json`)
+- SHA-256 hash keys (signature + metadata)
+- Automatic persistence
+- Cache invalidation on signature/metadata changes
+
+### 3. Code Generator (`src/code-generator.ts`)
+- OpenRouter API integration
+- Vercel AI SDK usage
+- Cache-aware generation
+- Error handling
+
+### 4. Prompt Builder (`src/prompt-builder.ts`)
+- Prompt construction from function signature
+- Metadata extraction from comments
+- Instruction formatting
+
+## Key Design Patterns
+
+### Visitor Pattern
+```typescript
+visitor: {
+  FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+    // Process each function declaration
+  }
+}
+```
+
+### Async Operation Queue
+```typescript
+const pendingOperations: Promise<void>[] = []
+// ... collect operations
+post() {
+  return Promise.all(pendingOperations)
+}
+```
+
+### Source Code Extraction
+```typescript
+const sourceCode = path.getSource()
+const signatureMatch = sourceCode.match(/^[^{]+/)
+const functionSignature = signatureMatch ? signatureMatch[0].trim() : sourceCode
+```
+- Uses actual source instead of reconstructing from AST
+- Preserves exact TypeScript types
+- Simpler and more reliable
+
+### Cache Key Generation
+```typescript
+private generateKey(signature: string, metadata: Metadata): string {
+  const data = JSON.stringify({ signature, metadata })
+  return crypto.createHash('sha256').update(data).digest('hex')
+}
+```
+
+## Critical Implementation Details
+
+### Directive Detection
+- Babel treats string literals at function start as directives
+- Stored in `node.body.directives` array
+- Metadata extracted from trailing comments
+
+### Metadata Parsing
+```typescript
+'use ai' // temperature=0.5, model=anthropic/claude-sonnet-4
+```
+- Comma-separated key=value pairs
+- Inline metadata overrides plugin defaults
+- Supports: temperature, model, seed, instructions
+
+### AST Manipulation
+1. Parse generated code string to AST
+2. Extract function body statements
+3. Replace original body with generated statements
+4. Remove directives to prevent re-processing
+
+### Error Handling
+- Silent failures in cache operations
+- Thrown errors in code generation
+- Babel will report compilation errors
+
+## Build System
+
+### tsup Configuration
+- Single entry point: `src/plugin.ts`
+- Dual format: ESM + CJS
+- TypeScript declarations
+- External Babel dependencies (peer deps)
+- Tree-shaking enabled
+
+### Output Structure
+```
+dist/
+  plugin.js       # ESM
+  plugin.cjs      # CommonJS
+  plugin.d.ts     # TypeScript types
+  plugin.d.cts    # CommonJS types
+  *.map           # Source maps
+```
+
+## Performance Considerations
+
+### Caching Strategy
+- Cache hit = instant (no API call)
+- Cache miss = API call + storage
+- Cache persists across builds
+- **Cache file should be committed** (enables team sharing)
+- Invalidates on signature/metadata change
+- Team members benefit from shared cache
+
+### Async Handling
+- All AI generation is async
+- Operations queued during traversal
+- Resolved in `post()` hook
+- Babel waits for completion
+
+## Security Considerations
+
+### API Key Management
+- Environment variable preferred
+- Plugin option as fallback
+- Never committed to repo
+- Required for operation
+
+### Generated Code
+- No validation of AI output
+- Assumes AI generates valid code
+- Parser will catch syntax errors
+- Runtime errors possible
