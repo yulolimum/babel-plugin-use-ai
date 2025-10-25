@@ -1,0 +1,69 @@
+{
+  "da60add98d99d5885a51011f58064ddc23dba79e0bcefc45540049bc351bd035": {
+    "signature": "function shuffleArray<T>(arr: T[]): T[]",
+    "metadata": {
+      "temperature": 0.5,
+      "model": "anthropic/claude-haiku-4.5"
+    },
+    "generatedCode": "const shuffled = [...arr];\nfor (let i = shuffled.length - 1; i > 0; i--) {\n  const j = Math.floor(Math.random() * (i + 1));\n  [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];\n}\nreturn shuffled;",
+    "timestamp": 1761430265480
+  },
+  "ca16a97bcfaf45077ba692721efc233615ad008f414b2936dd03dd5d21147540": {
+    "signature": "function isPalindrome(str: string): boolean",
+    "metadata": {
+      "temperature": 0.3,
+      "model": "anthropic/claude-haiku-4.5"
+    },
+    "generatedCode": "const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');\nreturn cleaned === cleaned.split('').reverse().join('');",
+    "timestamp": 1761430266548
+  },
+  "ecfa4e0449205e1849beb6e93bb3dc2846d53ddb8ec72c43266a6370a65f9b3e": {
+    "signature": "function mergeAndSort(arr1: number[], arr2: number[]): number[]",
+    "metadata": {
+      "model": "anthropic/claude-haiku-4.5",
+      "temperature": 0.7
+    },
+    "generatedCode": "return [...arr1, ...arr2].sort((a, b) => a - b);",
+    "timestamp": 1761430267416
+  },
+  "a4348d863579ebaaf8d91beb25b199d66fa5eaf3c2cc8d35d4091c55c2cdae0a": {
+    "signature": "function calculateFactorial(n: number): number",
+    "metadata": {
+      "model": "anthropic/claude-haiku-4.5",
+      "temperature": 0.7
+    },
+    "generatedCode": "if (n < 0) {\n  return NaN;\n}\nif (n === 0 || n === 1) {\n  return 1;\n}\nlet result = 1;\nfor (let i = 2; i <= n; i++) {\n  result *= i;\n}\nreturn result;",
+    "timestamp": 1761430268794
+  },
+  "bc95230daca7e004254a24b5180e3f28c166e2c9050874551d995b89c1ad278e": {
+    "signature": "function formatCurrency(amount: number, currency: string): string",
+    "metadata": {
+      "temperature": 0.2,
+      "model": "openai/gpt-4-turbo",
+      "seed": 42,
+      "instructions": "Format the amount with proper currency symbol and decimal places. Support USD, EUR, and GBP."
+    },
+    "generatedCode": "const formatter = new Intl.NumberFormat('en-US', {\n  style: 'currency',\n  currency: currency\n});\nreturn formatter.format(amount);",
+    "timestamp": 1761430270332
+  },
+  "87903d0655eaf00772d6cef91e47775301269ed55a81f9edcd1afba8023894af": {
+    "signature": "function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void",
+    "metadata": {
+      "temperature": 0.3,
+      "instructions": "This function is inside a React component with state setters: setIsLoading, setError, and setSuccess. Prevent default form submission, call setIsLoading(true), simulate an async API call with setTimeout (2 seconds), then call setIsLoading(false) and setSuccess(true). Handle errors by calling setError with the error message.",
+      "model": "anthropic/claude-haiku-4.5"
+    },
+    "generatedCode": "event.preventDefault();\nsetIsLoading(true);\nsetError(null);\nsetSuccess(false);\n\nsetTimeout(() => {\n  try {\n    setIsLoading(false);\n    setSuccess(true);\n  } catch (err) {\n    setIsLoading(false);\n    setError(err instanceof Error ? err.message : 'An error occurred');\n  }\n}, 2000);",
+    "timestamp": 1761430271764
+  },
+  "d0f9886c63d5fd5f1506ae2f685a9a00520e0ea6447cb28362568fb2c6b8447f": {
+    "signature": "function nestedFunction(): string",
+    "metadata": {
+      "instructions": "Return the string \"Hello from nested function!",
+      "model": "anthropic/claude-haiku-4.5",
+      "temperature": 0.7
+    },
+    "generatedCode": "return \"Hello from nested function!\";",
+    "timestamp": 1761430272796
+  }
+}
