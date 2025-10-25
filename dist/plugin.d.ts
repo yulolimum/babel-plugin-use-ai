@@ -1,5 +1,5 @@
-import * as t from '@babel/types';
 import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
 
 interface PluginOptions {
     apiKey?: string;

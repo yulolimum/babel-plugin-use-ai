@@ -1,81 +1,21 @@
 'use strict';
 
+var module$1 = require('module');
 require('@babel/types');
-var ai = require('ai');
-var aiSdkProvider = require('@openrouter/ai-sdk-provider');
+var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
-var crypto = require('crypto');
-var module$1 = require('module');
+var aiSdkProvider = require('@openrouter/ai-sdk-provider');
+var ai = require('ai');
 
 var _documentCurrentScript = typeof document !== 'undefined' ? document.currentScript : null;
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
+var crypto__default = /*#__PURE__*/_interopDefault(crypto);
 var fs__default = /*#__PURE__*/_interopDefault(fs);
 var path__default = /*#__PURE__*/_interopDefault(path);
-var crypto__default = /*#__PURE__*/_interopDefault(crypto);
 
 // src/plugin.ts
-
-// src/prompt-builder.ts
-function buildPrompt(functionCode, metadata = {}) {
-  const basePrompt = `You are a code generation assistant. Generate a function body for the following function:
-
-${functionCode}
-
-Requirements:
-- Implement the function according to its name and type signature
-- The function name describes what it should do
-- Must return the correct type
-- No side effects unless implied by the name
-- Valid TypeScript/JavaScript
-- No comments in the generated code
-- No console.log or debugging statements
-
-${metadata.instructions ? `Additional instructions: ${metadata.instructions}` : ""}
-
-Generate ONLY the function body code (no outer braces, no function declaration).
-Example:
-for (let i = 0; i < arr.length; i++) {
-  // code here
-}
-return result`;
-  return basePrompt;
-}
-async function generateFunctionBody(prompt, metadata = {}, apiKey, cache, functionSignature) {
-  if (cache && functionSignature) {
-    const cached = cache.get(functionSignature, metadata);
-    if (cached) {
-      return cached;
-    }
-  }
-  const key = apiKey || process.env.OPENROUTER_API_KEY;
-  if (!key) {
-    throw new Error("OpenRouter API key is required");
-  }
-  const openrouter = aiSdkProvider.createOpenRouter({ apiKey: key });
-  const model = openrouter(metadata.model || "openai/gpt-4-turbo");
-  const options = {
-    temperature: metadata.temperature ?? 0.7
-  };
-  if (metadata.seed !== void 0) {
-    options.seed = metadata.seed;
-  }
-  try {
-    const { text } = await ai.generateText({
-      model,
-      prompt,
-      ...options
-    });
-    const generatedCode = text.trim();
-    if (cache && functionSignature) {
-      cache.set(functionSignature, metadata, generatedCode);
-    }
-    return generatedCode;
-  } catch (error) {
-    throw error;
-  }
-}
 var FunctionCache = class {
   constructor(cacheFilePath = ".ai-cache.json") {
     this.cachePath = path__default.default.resolve(process.cwd(), cacheFilePath);
@@ -87,14 +27,18 @@ var FunctionCache = class {
         const data = fs__default.default.readFileSync(this.cachePath, "utf-8");
         return JSON.parse(data);
       }
-    } catch (error) {
+    } catch (_error) {
     }
     return {};
   }
   saveCache() {
     try {
-      fs__default.default.writeFileSync(this.cachePath, JSON.stringify(this.cache, null, 2), "utf-8");
-    } catch (error) {
+      fs__default.default.writeFileSync(
+        this.cachePath,
+        JSON.stringify(this.cache, null, 2),
+        "utf-8"
+      );
+    } catch (_error) {
     }
   }
   generateKey(signature, metadata) {
@@ -127,6 +71,64 @@ var FunctionCache = class {
     return Object.keys(this.cache).length;
   }
 };
+async function generateFunctionBody(prompt, metadata = {}, apiKey, cache, functionSignature) {
+  if (cache && functionSignature) {
+    const cached = cache.get(functionSignature, metadata);
+    if (cached) {
+      return cached;
+    }
+  }
+  const key = apiKey || process.env.OPENROUTER_API_KEY;
+  if (!key) {
+    throw new Error("OpenRouter API key is required");
+  }
+  const openrouter = aiSdkProvider.createOpenRouter({ apiKey: key });
+  const model = openrouter(metadata.model || "openai/gpt-4-turbo");
+  const options = {
+    temperature: metadata.temperature ?? 0.7
+  };
+  if (metadata.seed !== void 0) {
+    options.seed = metadata.seed;
+  }
+  const { text } = await ai.generateText({
+    model,
+    prompt,
+    ...options
+  });
+  const generatedCode = text.trim();
+  if (cache && functionSignature) {
+    cache.set(functionSignature, metadata, generatedCode);
+  }
+  return generatedCode;
+}
+
+// src/prompt-builder.ts
+function buildPrompt(functionCode, metadata = {}) {
+  const basePrompt = `You are a code generation assistant. Generate a function body for the following function:
+
+${functionCode}
+
+Requirements:
+- Implement the function according to its name and type signature
+- The function name describes what it should do
+- Must return the correct type
+- No side effects unless implied by the name
+- Valid TypeScript/JavaScript
+- No comments in the generated code
+- No console.log or debugging statements
+
+${metadata.instructions ? `Additional instructions: ${metadata.instructions}` : ""}
+
+Generate ONLY the function body code (no outer braces, no function declaration).
+Example:
+for (let i = 0; i < arr.length; i++) {
+  // code here
+}
+return result`;
+  return basePrompt;
+}
+
+// src/plugin.ts
 var require2 = module$1.createRequire((typeof document === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : (_documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === 'SCRIPT' && _documentCurrentScript.src || new URL('plugin.cjs', document.baseURI).href)));
 function babelPluginUseAi(_babelApi, options = {}) {
   const apiKey = options.apiKey || process.env.OPENROUTER_API_KEY;
@@ -194,7 +196,7 @@ function extractMetadataFromDirective(body) {
     const [, key, rawValue] = match;
     const value = rawValue.trim().replace(/^["']|["']$/g, "");
     if (key === "temperature" || key === "seed") {
-      metadata[key] = isNaN(Number(value)) ? value : parseFloat(value);
+      metadata[key] = Number.isNaN(Number(value)) ? value : parseFloat(value);
     } else if (key === "instructions") {
       metadata.instructions = value;
     } else if (key === "model") {
@@ -215,35 +217,27 @@ async function handleUseAiFunction(path2, pluginOptions, cache) {
     temperature: metadata.temperature ?? pluginOptions.temperature
   };
   const prompt = buildPrompt(functionSignature, mergedMetadata);
-  try {
-    let generatedBody = await generateFunctionBody(
-      prompt,
-      mergedMetadata,
-      pluginOptions.apiKey,
-      cache,
-      functionSignature
-    );
-    generatedBody = generatedBody.replace(/```(?:typescript|javascript|ts|js)?\n?/g, "").replace(/```\n?/g, "");
-    const bodyAst = parseBodyToAst(generatedBody);
-    node.body.body = bodyAst;
-    node.body.directives = [];
-  } catch (error) {
-    throw error;
-  }
+  let generatedBody = await generateFunctionBody(
+    prompt,
+    mergedMetadata,
+    pluginOptions.apiKey,
+    cache,
+    functionSignature
+  );
+  generatedBody = generatedBody.replace(/```(?:typescript|javascript|ts|js)?\n?/g, "").replace(/```\n?/g, "");
+  const bodyAst = parseBodyToAst(generatedBody);
+  node.body.body = bodyAst;
+  node.body.directives = [];
 }
 function parseBodyToAst(bodyString) {
   const parser = require2("@babel/parser");
-  try {
-    const ast = parser.parse(`(function() { ${bodyString} })`, {
-      sourceType: "module",
-      plugins: ["typescript"]
-    });
-    const functionExpr = ast.program.body[0].expression;
-    const blockStatement = functionExpr.body;
-    return blockStatement.body;
-  } catch (error) {
-    throw error;
-  }
+  const ast = parser.parse(`(function() { ${bodyString} })`, {
+    sourceType: "module",
+    plugins: ["typescript"]
+  });
+  const functionExpr = ast.program.body[0].expression;
+  const blockStatement = functionExpr.body;
+  return blockStatement.body;
 }
 
 module.exports = babelPluginUseAi;
