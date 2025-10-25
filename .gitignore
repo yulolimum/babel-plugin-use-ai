@@ -15,7 +15,7 @@ build/
 *.tsbuildinfo
 
 # Examples output
-example/dist
+examples/dist
 
 # IDE
 .vscode/
