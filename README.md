@@ -82,7 +82,9 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 ## Caching
 
-Results are cached in `.ai-cache.json`. Add it to `.gitignore` unless you want to commit AI-generated code to your repo (you don't).
+Results are cached in `.ai-cache.json`. This file **should be committed** to your repo so your team can share the generated implementations without hitting the API repeatedly.
+
+The cache automatically invalidates when function signatures or metadata change.
 
 ## Should You Use This?
 
