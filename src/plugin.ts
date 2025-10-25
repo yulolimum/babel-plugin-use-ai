@@ -32,7 +32,6 @@ export default function babelPluginUseAi(
 	};
 
 	const cache = new FunctionCache();
-	const pendingOperations: Promise<void>[] = [];
 
 	return {
 		name: "babel-plugin-use-ai",
@@ -63,16 +62,12 @@ export default function babelPluginUseAi(
 					return;
 				}
 
-				const operation = handleUseAiFunction(
+				handleUseAiFunction(
 					path,
 					pluginOptions as Required<PluginOptions>,
 					cache,
 				);
-				pendingOperations.push(operation);
 			},
-		},
-		post() {
-			return Promise.all(pendingOperations);
 		},
 	};
 }
@@ -135,11 +130,11 @@ function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
 	return metadata;
 }
 
-async function handleUseAiFunction(
+function handleUseAiFunction(
 	path: NodePath<t.FunctionDeclaration>,
 	pluginOptions: Required<PluginOptions>,
 	cache: FunctionCache,
-): Promise<void> {
+): void {
 	const node = path.node;
 	const metadata = extractMetadataFromDirective(node.body);
 
@@ -156,7 +151,7 @@ async function handleUseAiFunction(
 	};
 
 	const prompt = buildPrompt(functionSignature, mergedMetadata);
-	let generatedBody = await generateFunctionBody(
+	let generatedBody = generateFunctionBody(
 		prompt,
 		mergedMetadata,
 		pluginOptions.apiKey,
