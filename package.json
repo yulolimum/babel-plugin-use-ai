@@ -1,48 +1,52 @@
 {
-  "name": "babel-plugin-use-ai",
-  "version": "0.1.0",
-  "description": "Babel plugin for AI-powered function generation",
-  "type": "module",
-  "main": "./dist/plugin.cjs",
-  "module": "./dist/plugin.js",
-  "types": "./dist/plugin.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/plugin.d.ts",
-      "import": "./dist/plugin.js",
-      "require": "./dist/plugin.cjs"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsx example/dev.ts",
-    "type-check": "tsc --noEmit",
-    "prepublishOnly": "pnpm build"
-  },
-  "dependencies": {
-    "@openrouter/ai-sdk-provider": "^1.2.0",
-    "ai": "^5.0.0"
-  },
-  "peerDependencies": {
-    "@babel/core": "^7.23.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.23.0",
-    "@babel/generator": "^7.23.0",
-    "@babel/parser": "^7.23.0",
-    "@babel/traverse": "^7.23.0",
-    "@babel/types": "^7.23.0",
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__traverse": "^7.28.0",
-    "@types/node": "^24.9.1",
-    "dotenv": "^17.2.3",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
-  }
+	"name": "babel-plugin-use-ai",
+	"version": "0.1.0",
+	"description": "Babel plugin for AI-powered function generation",
+	"type": "module",
+	"main": "./dist/plugin.cjs",
+	"module": "./dist/plugin.js",
+	"types": "./dist/plugin.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/plugin.d.ts",
+			"import": "./dist/plugin.js",
+			"require": "./dist/plugin.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsx example/dev.ts",
+		"type-check": "tsc --noEmit",
+		"format": "biome format --write .",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"prepublishOnly": "npm run build"
+	},
+	"dependencies": {
+		"@openrouter/ai-sdk-provider": "^1.2.0",
+		"ai": "^5.0.0"
+	},
+	"peerDependencies": {
+		"@babel/core": "^7.23.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.23.0",
+		"@babel/generator": "^7.23.0",
+		"@babel/parser": "^7.23.0",
+		"@babel/traverse": "^7.23.0",
+		"@babel/types": "^7.23.0",
+		"@biomejs/biome": "^2.3.0",
+		"@types/babel__core": "^7.20.5",
+		"@types/babel__traverse": "^7.28.0",
+		"@types/node": "^24.9.1",
+		"dotenv": "^17.2.3",
+		"tsup": "^8.5.0",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3"
+	}
 }
