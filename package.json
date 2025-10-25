@@ -20,7 +20,7 @@
 	],
 	"scripts": {
 		"build": "tsup",
-		"dev": "tsx example/dev.ts",
+		"dev": "tsx examples/dev.ts",
 		"type-check": "tsc --noEmit",
 		"format": "biome format --write .",
 		"lint": "biome check .",

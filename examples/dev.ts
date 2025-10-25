@@ -28,7 +28,7 @@ async function main() {
 		const outputPath = path.join(__dirname, "dist", "example.ts");
 		fs.mkdirSync(path.join(__dirname, "dist"), { recursive: true });
 		fs.writeFileSync(outputPath, result?.code || "");
-		console.log("\n✅ Output written to example/dist/example.ts");
+		console.log("\n✅ Output written to examples/dist/example.ts");
 	} catch (error) {
 		console.error(
 			"❌ Error:",
