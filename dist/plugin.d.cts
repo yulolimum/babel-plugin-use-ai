@@ -11,7 +11,6 @@ declare function babelPluginUseAi(_babelApi: any, options?: PluginOptions): {
     visitor: {
         FunctionDeclaration(path: NodePath<t.FunctionDeclaration>): void;
     };
-    post(): Promise<void[]>;
 };
 
 export { type PluginOptions, babelPluginUseAi as default };

@@ -3,8 +3,7 @@ import '@babel/types';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { generateText } from 'ai';
+import { execSync } from 'child_process';
 
 // src/plugin.ts
 var FunctionCache = class {
@@ -62,34 +61,66 @@ var FunctionCache = class {
     return Object.keys(this.cache).length;
   }
 };
-async function generateFunctionBody(prompt, metadata = {}, apiKey, cache, functionSignature) {
-  if (cache && functionSignature) {
-    const cached = cache.get(functionSignature, metadata);
-    if (cached) {
-      return cached;
-    }
+function syncHttpRequest(url, options) {
+  const { method, headers, body } = options;
+  const headerArgs = Object.entries(headers).map(([key, value]) => `-H "${key}: ${value}"`).join(" ");
+  const bodyArg = body ? `-d '${body.replace(/'/g, "'\\''")}'` : "";
+  const curlCommand = `curl -s -X ${method} "${url}" ${headerArgs} ${bodyArg}`;
+  try {
+    const response = execSync(curlCommand, {
+      encoding: "utf-8",
+      maxBuffer: 10 * 1024 * 1024
+      // 10MB buffer
+    });
+    return response;
+  } catch (error) {
+    throw new Error(
+      `Sync HTTP request failed: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
-  const key = apiKey || process.env.OPENROUTER_API_KEY;
-  if (!key) {
-    throw new Error("OpenRouter API key is required");
+}
+
+// src/code-generator.ts
+function generateFunctionBody(prompt, metadata, apiKey, cache, functionSignature) {
+  const cached = cache.get(functionSignature, metadata);
+  if (cached) {
+    return cached;
   }
-  const openrouter = createOpenRouter({ apiKey: key });
-  const model = openrouter(metadata.model || "openai/gpt-4-turbo");
-  const options = {
+  const model = metadata.model || "openai/gpt-4-turbo";
+  const requestBody = {
+    model,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
     temperature: metadata.temperature ?? 0.7
   };
   if (metadata.seed !== void 0) {
-    options.seed = metadata.seed;
+    requestBody.seed = metadata.seed;
   }
-  const { text } = await generateText({
-    model,
-    prompt,
-    ...options
-  });
-  const generatedCode = text.trim();
-  if (cache && functionSignature) {
-    cache.set(functionSignature, metadata, generatedCode);
+  const response = syncHttpRequest(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/yulolimum/babel-plugin-use-ai",
+        "X-Title": "babel-plugin-use-ai"
+      },
+      body: JSON.stringify(requestBody)
+    }
+  );
+  const data = JSON.parse(response);
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error(
+      `Invalid response from OpenRouter API: ${JSON.stringify(data)}`
+    );
   }
+  const generatedCode = data.choices[0].message.content.trim();
+  cache.set(functionSignature, metadata, generatedCode);
   return generatedCode;
 }
 
@@ -134,7 +165,6 @@ function babelPluginUseAi(_babelApi, options = {}) {
     temperature: options.temperature ?? 0.7
   };
   const cache = new FunctionCache();
-  const pendingOperations = [];
   return {
     name: "babel-plugin-use-ai",
     visitor: {
@@ -156,16 +186,12 @@ function babelPluginUseAi(_babelApi, options = {}) {
         if (!foundDirective) {
           return;
         }
-        const operation = handleUseAiFunction(
+        handleUseAiFunction(
           path2,
           pluginOptions,
           cache
         );
-        pendingOperations.push(operation);
       }
-    },
-    post() {
-      return Promise.all(pendingOperations);
     }
   };
 }
@@ -196,7 +222,7 @@ function extractMetadataFromDirective(body) {
   }
   return metadata;
 }
-async function handleUseAiFunction(path2, pluginOptions, cache) {
+function handleUseAiFunction(path2, pluginOptions, cache) {
   const node = path2.node;
   const metadata = extractMetadataFromDirective(node.body);
   const sourceCode = path2.getSource();
@@ -208,7 +234,7 @@ async function handleUseAiFunction(path2, pluginOptions, cache) {
     temperature: metadata.temperature ?? pluginOptions.temperature
   };
   const prompt = buildPrompt(functionSignature, mergedMetadata);
-  let generatedBody = await generateFunctionBody(
+  let generatedBody = generateFunctionBody(
     prompt,
     mergedMetadata,
     pluginOptions.apiKey,
