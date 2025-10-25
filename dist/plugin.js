@@ -168,33 +168,26 @@ function babelPluginUseAi(_babelApi, options = {}) {
   };
 }
 function extractMetadataFromDirective(body) {
-  if (!body || !body.directives || body.directives.length === 0) {
+  if (!body || !body.body || body.body.length === 0) {
     return {};
   }
-  let useAiDirective = null;
-  for (const directive of body.directives) {
-    if (directive.value.value === "use ai") {
-      useAiDirective = directive;
-      break;
-    }
-  }
-  if (!useAiDirective) {
+  const firstStatement = body.body[0];
+  if (!firstStatement || !firstStatement.leadingComments) {
     return {};
   }
-  const trailingComments = useAiDirective.trailingComments;
-  if (!trailingComments || trailingComments.length === 0) {
-    return {};
-  }
-  const comment = trailingComments[0];
-  const commentText = comment.value.trim();
   const metadata = {};
-  const pairs = commentText.split(",").map((s) => s.trim());
-  for (const pair of pairs) {
-    const [key, value] = pair.split("=").map((s) => s.trim());
+  for (const comment of firstStatement.leadingComments) {
+    const commentText = comment.value.trim();
+    const match = commentText.match(/^\s*(\w+)\s*=\s*(.+)$/);
+    if (!match) {
+      continue;
+    }
+    const [, key, rawValue] = match;
+    const value = rawValue.trim().replace(/^["']|["']$/g, "");
     if (key === "temperature" || key === "seed") {
       metadata[key] = isNaN(Number(value)) ? value : parseFloat(value);
     } else if (key === "instructions") {
-      metadata.instructions = value.replace(/^["']|["']$/g, "");
+      metadata.instructions = value;
     } else if (key === "model") {
       metadata.model = value;
     }
