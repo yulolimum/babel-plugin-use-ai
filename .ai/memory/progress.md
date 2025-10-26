@@ -2,6 +2,14 @@
 
 ## Completed Features
 
+### ✅ React Native Compatibility (Oct 26, 2025)
+- [x] Fixed source extraction for nested functions
+- [x] Implemented per-visitor extraction strategies
+- [x] Added fallback to original file content via `path.hub.getCode()`
+- [x] Preserved TypeScript types and comments
+- [x] Removed `@babel/generator` dependency
+- [x] Works with React compiler transforms
+
 ### ✅ Metadata System (Oct 24, 2025)
 - [x] Separate comment line format
 - [x] Per-line metadata parsing
@@ -86,6 +94,13 @@
 - Improved readability and maintainability
 - Added React component example
 - Demonstrated scope variable references in instructions
+
+### 🎯 React Native Compatibility (Oct 26, 2025)
+- Fixed source extraction for nested functions in React Native
+- Implemented `path.hub.getCode()` fallback for original source
+- Preserved TypeScript types and comment metadata
+- Removed `@babel/generator` dependency
+- Per-visitor extraction strategies
 
 ### 🎯 Documentation & Polish (Oct 24, 2025)
 - Created comprehensive README

@@ -52,10 +52,25 @@ Generated Code
 ## Key Design Patterns
 
 ### Visitor Pattern
+Each function type has its own visitor with custom source extraction:
+
 ```typescript
 visitor: {
-  FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-    // Process each function declaration
+  FunctionExpression(path) {
+    // Nested functions (React Native case)
+    // Fallback to path.hub.getCode() for original source
+  },
+  ArrowFunctionExpression(path) {
+    // Variable-assigned arrow functions
+    // Use parentPath.parentPath.getSource()
+  },
+  ObjectMethod(path) {
+    // Object methods
+    // Use path.getSource()
+  },
+  FunctionDeclaration(path) {
+    // Top-level function declarations
+    // Use path.getSource()
   }
 }
 ```
@@ -70,14 +85,42 @@ post() {
 ```
 
 ### Source Code Extraction
+
+**Per-Visitor Strategies:**
+
+1. **FunctionExpression** (React Native nested functions):
 ```typescript
-const sourceCode = path.getSource()
-const signatureMatch = sourceCode.match(/^[^{]+/)
-const functionSignature = signatureMatch ? signatureMatch[0].trim() : sourceCode
+const sourceString = parentPath?.getSource();
+let fallbackSourceString = "";
+
+// Fallback: Extract from original file using line/column
+const code = path.hub.getCode(); // Original source file
+if (startLOC && endLOC && code) {
+  const codeLines = code.split("\n");
+  const extractedLines = codeLines.slice(startLOC.line - 1, endLOC.line);
+  extractedLines[0] = extractedLines[0].slice(startLOC.column);
+  extractedLines[extractedLines.length - 1] = 
+    extractedLines[extractedLines.length - 1].slice(0, endLOC.column);
+  fallbackSourceString = extractedLines.join("\n");
+}
 ```
+
+2. **ArrowFunctionExpression**:
+```typescript
+const sourceString = parentPath.parentPath?.getSource();
+```
+
+3. **ObjectMethod & FunctionDeclaration**:
+```typescript
+const sourceString = path.getSource();
+```
+
+**Key Benefits:**
 - Uses actual source instead of reconstructing from AST
-- Preserves exact TypeScript types
-- Simpler and more reliable
+- Preserves exact TypeScript types and comments
+- `path.hub.getCode()` accesses original file before transforms
+- Works even when source locations are stripped by other plugins
+- No dependency on `@babel/generator`
 
 ### Cache Key Generation
 ```typescript

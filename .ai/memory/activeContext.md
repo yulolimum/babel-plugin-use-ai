@@ -97,11 +97,60 @@ const functionSignature = signatureMatch ? signatureMatch[0].trim() : sourceCode
 
 ## Current Focus
 
-**Project Cleanup & Reorganization (Oct 25, 2025)**
-- Cleaned up root directory structure
-- Reorganized examples into dedicated subdirectory
-- Simplified development workflow
-- Updated biome.json for new structure
+**React Native Compatibility & Source Extraction Fix (Oct 26, 2025)**
+
+**Problem:** 
+- Plugin failed in React Native with "Unable to get source code for function" error
+- Nested functions (like those inside React components) had no source location info
+- Initial fix using `@babel/generator` transformed code, stripping TypeScript types and comments
+- Lost metadata like `// instructions=...` and type annotations like `: string`
+
+**Root Cause:**
+- React compiler and other transforms run before our plugin
+- These transforms strip source location metadata from AST
+- `path.getSource()` returns empty string when source locations are missing
+- `@babel/generator` reconstructs code from AST but loses TypeScript syntax
+
+**Solution:**
+Implemented per-visitor source extraction strategies with fallback to original file content:
+
+1. **FunctionExpression** (React Native nested functions):
+   - Try `parentPath.getSource()` first
+   - **Fallback**: Use `path.hub.getCode()` to get original source file
+   - Extract exact function using line/column from `path.node.loc`
+   - Preserves TypeScript types, comments, and all metadata
+
+2. **ArrowFunctionExpression**:
+   - Use `parentPath.parentPath.getSource()` for full variable declaration
+
+3. **ObjectMethod & FunctionDeclaration**:
+   - Use `path.getSource()` directly (works fine for these)
+
+**Implementation:**
+```typescript
+// FunctionExpression fallback
+const code = path.hub.getCode(); // Original source file
+if (startLOC && endLOC && code) {
+  const codeLines = code.split("\n");
+  const extractedLines = codeLines.slice(startLOC.line - 1, endLOC.line);
+  extractedLines[0] = extractedLines[0].slice(startLOC.column);
+  extractedLines[extractedLines.length - 1] = 
+    extractedLines[extractedLines.length - 1].slice(0, endLOC.column);
+  fallbackSourceString = extractedLines.join("\n");
+}
+```
+
+**Impact:**
+- ✅ React Native nested functions now work
+- ✅ TypeScript type annotations preserved (`: string`)
+- ✅ Comment-based metadata preserved (`// instructions=...`)
+- ✅ Original formatting maintained
+- ✅ No code transformation
+- ✅ Removed `@babel/generator` dependency
+- ✅ Each visitor handles its own extraction logic
+
+**Key Insight:**
+Using `path.hub.getCode()` accesses the **original source file content** before any transforms, ensuring we get the exact TypeScript code as written by the developer.
 
 ### Dev Workflow & Project Reorganization (Oct 25, 2025)
 **Problem:** 
