@@ -4,7 +4,7 @@ module.exports = (api) => {
 		presets: ["babel-preset-expo"],
 		plugins: [
 			[
-				"use-ai",
+				"babel-plugin-use-ai",
 				{
 					apiKey: process.env.OPENROUTER_API_KEY,
 					model: "anthropic/claude-haiku-4.5",
