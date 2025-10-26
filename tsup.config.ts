@@ -16,5 +16,4 @@ export default defineConfig({
 	splitting: false,
 	treeshake: true,
 	outDir: "dist",
-	onSuccess: "node examples/file/dev.js",
 });
