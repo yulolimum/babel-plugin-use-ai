@@ -1,69 +1,172 @@
 {
-  "da60add98d99d5885a51011f58064ddc23dba79e0bcefc45540049bc351bd035": {
-    "signature": "function shuffleArray<T>(arr: T[]): T[]",
-    "metadata": {
-      "temperature": 0.5,
-      "model": "anthropic/claude-haiku-4.5"
-    },
-    "generatedCode": "const shuffled = [...arr];\nfor (let i = shuffled.length - 1; i > 0; i--) {\n  const j = Math.floor(Math.random() * (i + 1));\n  [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];\n}\nreturn shuffled;",
-    "timestamp": 1761430265480
-  },
-  "ca16a97bcfaf45077ba692721efc233615ad008f414b2936dd03dd5d21147540": {
-    "signature": "function isPalindrome(str: string): boolean",
-    "metadata": {
-      "temperature": 0.3,
-      "model": "anthropic/claude-haiku-4.5"
-    },
-    "generatedCode": "const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');\nreturn cleaned === cleaned.split('').reverse().join('');",
-    "timestamp": 1761430266548
-  },
-  "ecfa4e0449205e1849beb6e93bb3dc2846d53ddb8ec72c43266a6370a65f9b3e": {
-    "signature": "function mergeAndSort(arr1: number[], arr2: number[]): number[]",
-    "metadata": {
-      "model": "anthropic/claude-haiku-4.5",
-      "temperature": 0.7
-    },
-    "generatedCode": "return [...arr1, ...arr2].sort((a, b) => a - b);",
-    "timestamp": 1761430267416
-  },
-  "a4348d863579ebaaf8d91beb25b199d66fa5eaf3c2cc8d35d4091c55c2cdae0a": {
-    "signature": "function calculateFactorial(n: number): number",
-    "metadata": {
-      "model": "anthropic/claude-haiku-4.5",
-      "temperature": 0.7
-    },
-    "generatedCode": "if (n < 0) {\n  return NaN;\n}\nif (n === 0 || n === 1) {\n  return 1;\n}\nlet result = 1;\nfor (let i = 2; i <= n; i++) {\n  result *= i;\n}\nreturn result;",
-    "timestamp": 1761430268794
-  },
-  "bc95230daca7e004254a24b5180e3f28c166e2c9050874551d995b89c1ad278e": {
-    "signature": "function formatCurrency(amount: number, currency: string): string",
-    "metadata": {
-      "temperature": 0.2,
-      "model": "openai/gpt-4-turbo",
-      "seed": 42,
-      "instructions": "Format the amount with proper currency symbol and decimal places. Support USD, EUR, and GBP."
-    },
-    "generatedCode": "const formatter = new Intl.NumberFormat('en-US', {\n  style: 'currency',\n  currency: currency\n});\nreturn formatter.format(amount);",
-    "timestamp": 1761430270332
-  },
-  "87903d0655eaf00772d6cef91e47775301269ed55a81f9edcd1afba8023894af": {
-    "signature": "function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void",
-    "metadata": {
-      "temperature": 0.3,
-      "instructions": "This function is inside a React component with state setters: setIsLoading, setError, and setSuccess. Prevent default form submission, call setIsLoading(true), simulate an async API call with setTimeout (2 seconds), then call setIsLoading(false) and setSuccess(true). Handle errors by calling setError with the error message.",
-      "model": "anthropic/claude-haiku-4.5"
-    },
-    "generatedCode": "event.preventDefault();\nsetIsLoading(true);\nsetError(null);\nsetSuccess(false);\n\nsetTimeout(() => {\n  try {\n    setIsLoading(false);\n    setSuccess(true);\n  } catch (err) {\n    setIsLoading(false);\n    setError(err instanceof Error ? err.message : 'An error occurred');\n  }\n}, 2000);",
-    "timestamp": 1761430271764
-  },
-  "d0f9886c63d5fd5f1506ae2f685a9a00520e0ea6447cb28362568fb2c6b8447f": {
-    "signature": "function nestedFunction(): string",
-    "metadata": {
-      "instructions": "Return the string \"Hello from nested function!",
-      "model": "anthropic/claude-haiku-4.5",
-      "temperature": 0.7
-    },
-    "generatedCode": "return \"Hello from nested function!\";",
-    "timestamp": 1761430272796
-  }
+	"867349e5a4596e9618198c5c665dc3135b98c376386c302a0e2af0ad834577f4": {
+		"signature": "function shuffleArray<T>(arr: T[]): T[] {\n  'use ai'\n  // temperature=0.5\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.5,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "const shuffled = [...arr];\nfor (let i = shuffled.length - 1; i > 0; i--) {\n  const j = Math.floor(Math.random() * (i + 1));\n  [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];\n}\nreturn shuffled;",
+		"timestamp": 1761493728435
+	},
+	"6aaf94bf79e860f60a1481cf79c09bcb138e442f9f98b42b60d5247377f8d8fa": {
+		"signature": "function isPalindrome(str: string): boolean {\n  'use ai'\n  // temperature=0.3\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');\nreturn cleaned === cleaned.split('').reverse().join('');",
+		"timestamp": 1761493730386
+	},
+	"bf0f09fb965987465aa4552f8572d91431e4015df032c513e974ca4791c80019": {
+		"signature": "function mergeAndSort(arr1: number[], arr2: number[]): number[] {\n  'use ai'\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"model": "anthropic/claude-haiku-4.5",
+			"temperature": 0.7
+		},
+		"generatedCode": "return [...arr1, ...arr2].sort((a, b) => a - b);",
+		"timestamp": 1761493731309
+	},
+	"be9029e0f3dd8c048c933f33e9a3d073f7d73821cdb992bc5675ab9b4e12a065": {
+		"signature": "function calculateFactorial(n: number): number {\n  'use ai'\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"model": "anthropic/claude-haiku-4.5",
+			"temperature": 0.7
+		},
+		"generatedCode": "if (n < 0) {\n  throw new Error('Factorial is not defined for negative numbers');\n}\nif (n === 0 || n === 1) {\n  return 1;\n}\nlet result = 1;\nfor (let i = 2; i <= n; i++) {\n  result *= i;\n}\nreturn result;",
+		"timestamp": 1761493733018
+	},
+	"09237bec28026e6d7c0532e32ab8b73e9959aaad7d135a6f63841d7ebb41cd27": {
+		"signature": "function formatCurrency(amount: number, currency: string): string {\n  'use ai'\n  // temperature=0.2\n  // model=openai/gpt-4-turbo\n  // seed=42\n  // instructions=Format the amount with proper currency symbol and decimal places. Support USD, EUR, and GBP.\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.2,
+			"model": "openai/gpt-4-turbo",
+			"seed": 42,
+			"instructions": "Format the amount with proper currency symbol and decimal places. Support USD, EUR, and GBP."
+		},
+		"generatedCode": "switch (currency) {\n  case 'USD':\n    return `$${amount.toFixed(2)}`;\n  case 'EUR':\n    return `€${amount.toFixed(2)}`;\n  case 'GBP':\n    return `£${amount.toFixed(2)}`;\n  default:\n    throw new Error('Unsupported currency');\n}",
+		"timestamp": 1761493735074
+	},
+	"f22defcc1171a1d275b7dd89cda1d1a606bf9be13e4f51ead7ccd1fd9d15d950": {
+		"signature": "function handleFormSubmit(event: React.FormEvent<HTMLFormElement>): void {\n  'use ai'\n  // temperature=0.3\n  // instructions=This function is inside a React component with state setters: setIsLoading, setError, and setSuccess. Prevent default form submission, call setIsLoading(true), simulate an async API call with setTimeout (2 seconds), then call setIsLoading(false) and setSuccess(true). Handle errors by calling setError with the error message.\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.3,
+			"instructions": "This function is inside a React component with state setters: setIsLoading, setError, and setSuccess. Prevent default form submission, call setIsLoading(true), simulate an async API call with setTimeout (2 seconds), then call setIsLoading(false) and setSuccess(true). Handle errors by calling setError with the error message.",
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "event.preventDefault();\nsetIsLoading(true);\nsetError(null);\n\nsetTimeout(() => {\n  try {\n    setIsLoading(false);\n    setSuccess(true);\n  } catch (error) {\n    setIsLoading(false);\n    setError(error instanceof Error ? error.message : 'An error occurred');\n  }\n}, 2000);",
+		"timestamp": 1761493736298
+	},
+	"05537b4eb1cee066e247b537c8e2c9ce287d3104fac280fa2fb6bfc64d6ae90a": {
+		"signature": "function nestedFunction(): string {\n    'use ai'\n    // instructions=Return the string \"Hello from nested function!\"\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"instructions": "Return the string \"Hello from nested function!",
+			"model": "anthropic/claude-haiku-4.5",
+			"temperature": 0.7
+		},
+		"generatedCode": "return \"Hello from nested function!\";",
+		"timestamp": 1761493737249
+	},
+	"8af2184e4ca9f4c2718be71ee7a369879271016106126d3f8b16351ad9c2acdd": {
+		"signature": "reverseString = function (str: string): string {\n  'use ai'\n  // temperature=0.3\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "return str.split('').reverse().join('');",
+		"timestamp": 1761493739061
+	},
+	"7f241ccd483d45deb0d3e4c155af50e43917ec575ab11558f2c4087b77028812": {
+		"signature": "const capitalizeWords = (str: string): string => {\n  'use ai'\n  // temperature=0.3\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "return str\n  .split(' ')\n  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())\n  .join(' ');",
+		"timestamp": 1761493740135
+	},
+	"544cb2f31ff219d6c7e1f564f2f31ecb756a740103f28e7ece93f5ad7291164c": {
+		"signature": "const removeDuplicates = <T>(arr: T[]): T[] => {\n  'use ai'\n  // temperature=0.3\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "return Array.from(new Set(arr));",
+		"timestamp": 1761493740917
+	},
+	"aa3b843cd29030bcf6275648a07636d6578b95511f99c2d956ce7077f6c56b20": {
+		"signature": "const debounce = (fn: Function, delay: number): Function => {\n  'use ai'\n  // temperature=0.5\n  // instructions=Return a debounced version of the function that delays execution until after delay milliseconds have elapsed since the last call.\n  throw new Error('Not implemented')\n}",
+		"metadata": {
+			"temperature": 0.5,
+			"instructions": "Return a debounced version of the function that delays execution until after delay milliseconds have elapsed since the last call.",
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "let timeoutId: NodeJS.Timeout | null = null;\n  \n  return function(...args: any[]) {\n    if (timeoutId !== null) {\n      clearTimeout(timeoutId);\n    }\n    \n    timeoutId = setTimeout(() => {\n      fn(...args);\n      timeoutId = null;\n    }, delay);\n  };",
+		"timestamp": 1761493742467
+	},
+	"fc0819cb2f79fe85bb1f6e2e3e87aa556c96db998e1a1f269c266dc269f4ae03": {
+		"signature": "countVowels(str: string): number {\n    'use ai'\n    // temperature=0.3\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "let count = 0;\nconst vowels = 'aeiouAEIOU';\nfor (let i = 0; i < str.length; i++) {\n  if (vowels.includes(str[i])) {\n    count++;\n  }\n}\nreturn count;",
+		"timestamp": 1761493743387
+	},
+	"837c88df4e10409a0bb33b4c91af5c8fbf037d267da16e3b88f1abb9eab45f8f": {
+		"signature": "removeWhitespace(str: string): string {\n    'use ai'\n    // temperature=0.3\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "return str.replace(/\\s/g, '');",
+		"timestamp": 1761493744505
+	},
+	"8a5ab7acc4819021aa94ebf43fd3039d750383946930ef3e71aba3662407d494": {
+		"signature": "truncate(str: string, maxLength: number): string {\n    'use ai'\n    // temperature=0.3\n    // instructions=Truncate the string to maxLength characters and add '...' if it was truncated.\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"temperature": 0.3,
+			"instructions": "Truncate the string to maxLength characters and add '...' if it was truncated.",
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "if (str.length <= maxLength) {\n    return str;\n  }\n  return str.substring(0, maxLength - 3) + '...';",
+		"timestamp": 1761493745865
+	},
+	"6f46e22e6c56db59cadee9a8d2c1f38103633042fb387e8fcf8c9e01558f26a0": {
+		"signature": "isPrime(n: number): boolean {\n    'use ai'\n    // temperature=0.3\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"temperature": 0.3,
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "if (n <= 1) return false;\nif (n <= 3) return true;\nif (n % 2 === 0 || n % 3 === 0) return false;\nfor (let i = 5; i * i <= n; i += 6) {\n  if (n % i === 0 || n % (i + 2) === 0) return false;\n}\nreturn true;",
+		"timestamp": 1761493747888
+	},
+	"087285f7c5d4fc7f2aa6f4eb080381c7b27d6eaca85786ba587ceed29b23f0e2": {
+		"signature": "fibonacci(n: number): number {\n    'use ai'\n    // temperature=0.3\n    // instructions=Return the nth Fibonacci number. Use iterative approach for better performance.\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"temperature": 0.3,
+			"instructions": "Return the nth Fibonacci number. Use iterative approach for better performance.",
+			"model": "anthropic/claude-haiku-4.5"
+		},
+		"generatedCode": "if (n <= 0) return 0;\nif (n === 1) return 1;\n\nlet prev = 0;\nlet curr = 1;\n\nfor (let i = 2; i <= n; i++) {\n  const next = prev + curr;\n  prev = curr;\n  curr = next;\n}\n\nreturn curr;",
+		"timestamp": 1761493749363
+	},
+	"402d6b30dbd3cce0f40c7b656edf14981054100ad510ca9da30fe3713140ddf3": {
+		"signature": "function getHelloWorld(): string {\n    'use ai'\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"model": "anthropic/claude-haiku-4.5",
+			"temperature": 0.7
+		},
+		"generatedCode": "return 'Hello World';",
+		"timestamp": 1761493750088
+	},
+	"4bc7bfb890462c4ad390f45035d3e30ef2cbbde5382d71767cd087e0016cf1a0": {
+		"signature": "function getCurrentTime(): string {\n    'use ai'\n    // instructions=Return a human-readable string with hours/mins/seconds\n    throw new Error('Not implemented')\n  }",
+		"metadata": {
+			"instructions": "Return a human-readable string with hours/mins/seconds",
+			"model": "anthropic/claude-haiku-4.5",
+			"temperature": 0.7
+		},
+		"generatedCode": "const now = new Date();\nconst hours = String(now.getHours()).padStart(2, '0');\nconst minutes = String(now.getMinutes()).padStart(2, '0');\nconst seconds = String(now.getSeconds()).padStart(2, '0');\nreturn `${hours}:${minutes}:${seconds}`;",
+		"timestamp": 1761493751060
+	}
 }
