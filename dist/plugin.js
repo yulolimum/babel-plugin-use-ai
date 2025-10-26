@@ -1,5 +1,5 @@
 import { createRequire } from 'module';
-import '@babel/types';
+import * as t from '@babel/types';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -131,9 +131,10 @@ function buildPrompt(functionCode, metadata = {}) {
 ${functionCode}
 
 Requirements:
-- Implement the function according to its name and type signature
-- The function name describes what it should do
-- Must return the correct type
+- Implement the function according to its name (if it exists) and type signature
+- The function name describes what it should do. If the function name is not provided, infer the purpose from the parameters, type, and/or instructions.
+  - If you have no idea what the function is suppose to do, throw an error with the message "Babel Use-AI: Unable to infer function purpose".
+- Must return the correct type (use 'return' statement for non-void functions)
 - No side effects unless implied by the name
 - Valid TypeScript/JavaScript
 - No comments in the generated code
@@ -142,11 +143,32 @@ Requirements:
 ${metadata.instructions ? `Additional instructions: ${metadata.instructions}` : ""}
 
 Generate ONLY the function body code (no outer braces, no function declaration).
-Example:
-for (let i = 0; i < arr.length; i++) {
-  // code here
-}
-return result`;
+DO NOT wrap your response in code blocks (no \`\`\`typescript, \`\`\`javascript, or \`\`\`).
+Return raw code only.
+
+Examples for different function types:
+
+1. Function Declaration:
+   function add(a, b) { ... }
+   Body: return a + b;
+
+2. Function Expression:
+   const add = function(a, b) { ... }
+   Body: return a + b;
+
+3. Arrow Function:
+   const add = (a, b) => { ... }
+   Body: return a + b;
+
+4. Object Method:
+   { add(a, b) { ... } }
+   Body: return a + b;
+
+5. Void function (no return needed):
+   function log(msg) { ... }
+   Body: console.log(msg);
+
+CRITICAL: All non-void functions MUST include 'return' statement.`;
   return basePrompt;
 }
 
@@ -168,32 +190,89 @@ function babelPluginUseAi(_babelApi, options = {}) {
   return {
     name: "babel-plugin-use-ai",
     visitor: {
-      FunctionDeclaration(path2) {
-        const node = path2.node;
-        const body = node.body;
-        if (!body || body.body.length === 0 && (!body.directives || body.directives.length === 0)) {
-          return;
-        }
-        let foundDirective = false;
-        if (body.directives) {
-          for (const directive of body.directives) {
-            if (directive.value.value === "use ai") {
-              foundDirective = true;
-              break;
-            }
+      FunctionExpression(path2) {
+        const body = path2.node.body;
+        const parentPath = path2.parentPath;
+        const sourceString = parentPath?.getSource();
+        let fallbackSourceString = "";
+        const startLOC = path2.node.loc?.start;
+        const endLOC = path2.node.loc?.end;
+        const code = path2.hub.getCode();
+        if (startLOC && endLOC && code) {
+          const codeLines = code.split("\n");
+          const extractedLines = codeLines.slice(
+            startLOC.line - 1,
+            endLOC.line
+          );
+          if (extractedLines.length > 0) {
+            extractedLines[0] = extractedLines[0].slice(startLOC.column);
+            extractedLines[extractedLines.length - 1] = extractedLines[extractedLines.length - 1].slice(0, endLOC.column);
+            fallbackSourceString = extractedLines.join("\n");
           }
         }
-        if (!foundDirective) {
-          return;
-        }
-        handleUseAiFunction(
-          path2,
+        if (!body) return;
+        if (!sourceString && !fallbackSourceString) return;
+        if (!hasUseAiDirective(body)) return;
+        const metadata = extractMetadataFromDirective(body);
+        processUseAiDirective(
+          {
+            body,
+            sourceString: sourceString || fallbackSourceString,
+            metadata
+          },
+          pluginOptions,
+          cache
+        );
+      },
+      ArrowFunctionExpression(path2) {
+        const body = path2.node.body;
+        const parentPath = path2.parentPath.parentPath;
+        const sourceString = parentPath?.getSource();
+        if (!body) return;
+        if (!t.isBlockStatement(body)) return;
+        if (!sourceString) return;
+        if (!hasUseAiDirective(body)) return;
+        const metadata = extractMetadataFromDirective(body);
+        processUseAiDirective(
+          { body, sourceString, metadata },
+          pluginOptions,
+          cache
+        );
+      },
+      ObjectMethod(path2) {
+        const body = path2.node.body;
+        const sourceString = path2.getSource();
+        if (!body) return;
+        if (!sourceString) return;
+        if (!hasUseAiDirective(body)) return;
+        const metadata = extractMetadataFromDirective(body);
+        processUseAiDirective(
+          { body, sourceString, metadata },
+          pluginOptions,
+          cache
+        );
+      },
+      FunctionDeclaration(path2) {
+        const body = path2.node.body;
+        const sourceString = path2.getSource();
+        if (!body) return;
+        if (!sourceString) return;
+        if (!hasUseAiDirective(body)) return;
+        const metadata = extractMetadataFromDirective(body);
+        processUseAiDirective(
+          { body, sourceString, metadata },
           pluginOptions,
           cache
         );
       }
     }
   };
+}
+function hasUseAiDirective(body) {
+  if (!body?.directives || body.directives.length === 0) return false;
+  return body.directives.some(
+    (directive) => directive.value.value === "use ai"
+  );
 }
 function extractMetadataFromDirective(body) {
   if (!body || !body.body || body.body.length === 0) {
@@ -222,29 +301,25 @@ function extractMetadataFromDirective(body) {
   }
   return metadata;
 }
-function handleUseAiFunction(path2, pluginOptions, cache) {
-  const node = path2.node;
-  const metadata = extractMetadataFromDirective(node.body);
-  const sourceCode = path2.getSource();
-  const signatureMatch = sourceCode.match(/^[^{]+/);
-  const functionSignature = signatureMatch ? signatureMatch[0].trim() : sourceCode;
+function processUseAiDirective(info, pluginOptions, cache) {
+  const { body, sourceString, metadata } = info;
   const mergedMetadata = {
     ...metadata,
     model: metadata.model || pluginOptions.model,
     temperature: metadata.temperature ?? pluginOptions.temperature
   };
-  const prompt = buildPrompt(functionSignature, mergedMetadata);
+  const prompt = buildPrompt(sourceString, mergedMetadata);
   let generatedBody = generateFunctionBody(
     prompt,
     mergedMetadata,
     pluginOptions.apiKey,
     cache,
-    functionSignature
+    sourceString
   );
   generatedBody = generatedBody.replace(/```(?:typescript|javascript|ts|js)?\n?/g, "").replace(/```\n?/g, "");
   const bodyAst = parseBodyToAst(generatedBody);
-  node.body.body = bodyAst;
-  node.body.directives = [];
+  body.body = bodyAst;
+  body.directives = [];
 }
 function parseBodyToAst(bodyString) {
   const parser = require2("@babel/parser");
