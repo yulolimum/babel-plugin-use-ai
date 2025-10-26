@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import generate from "@babel/generator";
 import type { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
 import { FunctionCache } from "./cache";
@@ -36,34 +37,100 @@ export default function babelPluginUseAi(
 	return {
 		name: "babel-plugin-use-ai",
 		visitor: {
-			FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
-				const node = path.node;
-				const body = node.body;
+			FunctionExpression(path: NodePath<t.FunctionExpression>) {
+				// console.info("FunctionExpression", path.node)
+				const body = path.node.body;
+				const parentPath = path.parentPath;
+				const sourceString = parentPath?.getSource();
 
-				if (
-					!body ||
-					(body.body.length === 0 &&
-						(!body.directives || body.directives.length === 0))
-				) {
-					return;
-				}
+				let fallbackSourceString = "";
 
-				let foundDirective = false;
-				if (body.directives) {
-					for (const directive of body.directives) {
-						if ((directive as any).value.value === "use ai") {
-							foundDirective = true;
-							break;
-						}
+				const startLOC = path.node.loc?.start;
+				const endLOC = path.node.loc?.end;
+
+				const code = path.hub.getCode();
+
+				if (startLOC && endLOC && code) {
+					const codeLines = code.split("\n");
+					const extractedLines = codeLines.slice(
+						startLOC.line - 1,
+						endLOC.line,
+					);
+
+					if (extractedLines.length > 0) {
+						extractedLines[0] = extractedLines[0].slice(startLOC.column);
+						extractedLines[extractedLines.length - 1] = extractedLines[
+							extractedLines.length - 1
+						].slice(0, endLOC.column);
+						fallbackSourceString = extractedLines.join("\n");
 					}
 				}
 
-				if (!foundDirective) {
-					return;
-				}
+				if (!body) return;
+				if (!sourceString && !fallbackSourceString) return;
+				if (!hasUseAiDirective(body)) return;
 
-				handleUseAiFunction(
-					path,
+				const metadata = extractMetadataFromDirective(body);
+
+				processUseAiDirective(
+					{
+						body,
+						sourceString: sourceString || fallbackSourceString,
+						metadata,
+					},
+					pluginOptions as Required<PluginOptions>,
+					cache,
+				);
+			},
+			ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
+				// console.info("ArrowFunctionExpression", path.node)
+				const body = path.node.body;
+				const parentPath = path.parentPath.parentPath;
+				const sourceString = parentPath?.getSource();
+
+				if (!body) return;
+				if (!t.isBlockStatement(body)) return;
+				if (!sourceString) return;
+				if (!hasUseAiDirective(body)) return;
+
+				const metadata = extractMetadataFromDirective(body);
+
+				processUseAiDirective(
+					{ body, sourceString, metadata },
+					pluginOptions as Required<PluginOptions>,
+					cache,
+				);
+			},
+			ObjectMethod(path: NodePath<t.ObjectMethod>) {
+				// console.info("ObjectMethod", path.node)
+				const body = path.node.body;
+				const sourceString = path.getSource();
+
+				if (!body) return;
+				if (!sourceString) return;
+				if (!hasUseAiDirective(body)) return;
+
+				const metadata = extractMetadataFromDirective(body);
+
+				processUseAiDirective(
+					{ body, sourceString, metadata },
+					pluginOptions as Required<PluginOptions>,
+					cache,
+				);
+			},
+			FunctionDeclaration(path: NodePath<t.FunctionDeclaration>) {
+				// console.info("FunctionDeclaration", path.node)
+				const body = path.node.body;
+				const sourceString = path.getSource();
+
+				if (!body) return;
+				if (!sourceString) return;
+				if (!hasUseAiDirective(body)) return;
+
+				const metadata = extractMetadataFromDirective(body);
+
+				processUseAiDirective(
+					{ body, sourceString, metadata },
 					pluginOptions as Required<PluginOptions>,
 					cache,
 				);
@@ -72,25 +139,12 @@ export default function babelPluginUseAi(
 	};
 }
 
-function _isUseAiDirective(statement: t.Statement): boolean {
-	if (!t.isExpressionStatement(statement)) {
-		return false;
-	}
+function hasUseAiDirective(body: t.BlockStatement): boolean {
+	if (!body?.directives || body.directives.length === 0) return false;
 
-	const expr = statement.expression;
-	let stringLiteral: t.StringLiteral | null = null;
-
-	if (t.isStringLiteral(expr)) {
-		stringLiteral = expr;
-	} else if (t.isTSAsExpression(expr) && t.isStringLiteral(expr.expression)) {
-		stringLiteral = expr.expression;
-	}
-
-	if (!stringLiteral) {
-		return false;
-	}
-
-	return stringLiteral.value === "use ai";
+	return body.directives.some(
+		(directive) => (directive as any).value.value === "use ai",
+	);
 }
 
 function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
@@ -130,19 +184,16 @@ function extractMetadataFromDirective(body: t.BlockStatement): Metadata {
 	return metadata;
 }
 
-function handleUseAiFunction(
-	path: NodePath<t.FunctionDeclaration>,
+function processUseAiDirective(
+	info: {
+		body: t.BlockStatement;
+		sourceString: string;
+		metadata: Metadata;
+	},
 	pluginOptions: Required<PluginOptions>,
 	cache: FunctionCache,
 ): void {
-	const node = path.node;
-	const metadata = extractMetadataFromDirective(node.body);
-
-	const sourceCode = path.getSource();
-	const signatureMatch = sourceCode.match(/^[^{]+/);
-	const functionSignature = signatureMatch
-		? signatureMatch[0].trim()
-		: sourceCode;
+	const { body, sourceString, metadata } = info;
 
 	const mergedMetadata: Metadata = {
 		...metadata,
@@ -150,13 +201,13 @@ function handleUseAiFunction(
 		temperature: metadata.temperature ?? pluginOptions.temperature,
 	};
 
-	const prompt = buildPrompt(functionSignature, mergedMetadata);
+	const prompt = buildPrompt(sourceString, mergedMetadata);
 	let generatedBody = generateFunctionBody(
 		prompt,
 		mergedMetadata,
 		pluginOptions.apiKey,
 		cache,
-		functionSignature,
+		sourceString,
 	);
 
 	generatedBody = generatedBody
@@ -164,8 +215,8 @@ function handleUseAiFunction(
 		.replace(/```\n?/g, "");
 
 	const bodyAst = parseBodyToAst(generatedBody);
-	node.body.body = bodyAst;
-	node.body.directives = [];
+	body.body = bodyAst;
+	body.directives = [];
 }
 
 function parseBodyToAst(bodyString: string): t.Statement[] {
