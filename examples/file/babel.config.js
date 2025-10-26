@@ -1,9 +1,6 @@
-import dotenv from "dotenv";
-
-dotenv.config();
-
 export default {
 	plugins: [
+		"@babel/plugin-transform-typescript",
 		[
 			"../../dist/plugin.js",
 			{
@@ -13,8 +10,4 @@ export default {
 			},
 		],
 	],
-	parserOpts: {
-		sourceType: "module",
-		plugins: ["typescript"],
-	},
 };
